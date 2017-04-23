@@ -7,9 +7,11 @@ def parseProxies():
             patter_with_pound = re.compile('^(\S+)(\s+)#.+$')
             patter_before = re.compile('.+(http|socks)(.+)')
             for line in old_file:
+                if not patter_before.match(line):
+                    continue
+                line = re.sub(patter_before, r'\1\2', line)
                 line = re.sub(pattern_with_china, '', line)
                 line = re.sub(patter_with_pound, r'\1', line)
-                line = re.sub(patter_before, r'\1\2', line)
                 if re.match(r'.+', line):
                     new_file.write(line)
 
