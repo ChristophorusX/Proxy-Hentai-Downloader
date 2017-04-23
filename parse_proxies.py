@@ -3,11 +3,11 @@ import re
 def parseProxies():
     with open('proxies.txt') as f:
         for line in f:
-            re.sub(r'^.+China.+$', '', line)
+            line = re.sub(r'^.+China.+$', '', line)
 
     with open('proxies.txt') as f:
         for line in f:
-            re.sub(r'^(.+)#.+$',r'\1', line)
+            line = re.sub(r'^(.+)#.+$',r'\1', line)
 
     with open('proxies.txt', 'r') as f:
         proxyList = [line[:-1] for line in f]
