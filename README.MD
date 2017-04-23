@@ -24,9 +24,15 @@ Run `./AutoDownload` to start download.
 $ ./AutoDownload
 ```
 
+To download from exhentai galleries, put your username and password as flags, e.g.
+
+```bash
+$ ./AutoDownload -u <your username> -k <your password>
+```
+
 ### Set URLs
 
-All URLs waiting for download can be put into the file `urls.txt`. URLs should be separated by spaces in order to be read by the program.
+All URLs waiting for download can be put into the file `urls.txt`. NOTE: URLs should be separated by spaces in order to be read by the program.
 
 ### Set Configurations
 
@@ -50,23 +56,11 @@ There are two `config.py` located at project home directory and `./xeHentai`. Th
 
 ### Logging In
 
-In order to download image from ex-hentai gallery, one needs to provide user name and password to the program. This can be achieved by providing flags `-u/--username` and `-k/--key` to `AutoDownload`.
+In order to download image from ex-hentai gallery, one needs to provide user name and password to the program. This can be achieved by providing flags `-u/--username` and `-k/--key` to `AutoDownload` as mentioned above.
 
-```bash
-$ ./AutoDownload -u username -k password
-```
+### Filtering Proxies
 
-### Filter Proxies
-
-The selection of proxies can be altered in `save_proxies.py`.
-
-- **types** (list) – Types (protocols) that need to be check on support by proxy. Supported: HTTP, HTTPS, SOCKS4, SOCKS5, CONNECT:80, CONNECT:25 And levels of anonymity (HTTP only): Transparent, Anonymous, High
-- **data** – (optional) String or list with proxies. Also can be a file-like object supports read() method. Used instead of providers
-- **countries** (list) – (optional) List of ISO country codes where should be located proxies
-- **post** (bool) – (optional) Flag indicating use POST instead of GET for requests when checking proxies
-- **strict** (bool) – (optional) Flag indicating that anonymity levels of types (protocols) supported by a proxy must be equal to the requested types and levels of anonymity. By default, strict mode is off and for a successful check is enough to satisfy any one of the requested types
-- **dnsbl** (list) – (optional) Spam databases for proxy checking
-- **limit** (int) – (optional) The maximum number of proxies
+One can choose whether or not to run the proxy searching program before each download. The skipping of the proxy search can be done by providing `-s/--skip` flag.
 
 ## Legal Issues
 
