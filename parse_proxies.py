@@ -4,7 +4,7 @@ def parseProxies():
     with open('fetched_proxies.txt') as old_file:
         with open('proxies.txt', 'w') as new_file:
             pattern_with_china = re.compile('^.+china.+$')
-            patter_with_pound = re.compile('^(.+)(\s+)#.+$')
+            patter_with_pound = re.compile('^(\S+)(\s+)#.+$')
             for line in old_file:
                 line = re.sub(pattern_with_china, '', line)
                 line = re.sub(patter_with_pound, r'\1', line)
