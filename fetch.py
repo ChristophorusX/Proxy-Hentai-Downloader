@@ -119,7 +119,7 @@ def run():
         proxies = _
 
 
-    _, filepath = fetched_proxies.txt
+    _, filepath = tempfile.mkstemp(prefix="proxies", suffix=".txt")
     os.close(_)
     handle = open(filepath, "w+b")
 
