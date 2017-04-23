@@ -4,12 +4,12 @@ def parseProxies():
     with open('proxies.txt') as f:
         for line in f:
             line = re.sub(r'^.+China.+$', '', line)
-            print line
+            print(line)
 
     with open('proxies.txt') as f:
         for line in f:
             line = re.sub(r'^(.+)#.+$',r'\1', line)
-            print line
+            print(line)
 
 
 
