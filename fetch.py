@@ -119,8 +119,7 @@ def run():
         proxies = _
 
 
-    _, filepath = tempfile.mkstemp(prefix="proxies", suffix=".txt")
-    os.close(_)
+    filepath = 'fetched_proxies.txt'
     handle = open(filepath, "w+b")
 
     sys.stdout.write("[i] storing results to '%s'...\n" % filepath)
