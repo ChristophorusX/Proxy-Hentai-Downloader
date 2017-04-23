@@ -1,41 +1,14 @@
-# Proxy-Hentai-Downloader
+# Proxy Hentai Downloader
 
 ## General
 
-This is a python project supporting download from e-hentai and ex-hentai galleries and automatically searching for available proxies. We combine two already existed projects from GitHub: [fffonion/xeHentai](https://github.com/fffonion/xeHentai) and [constverum/ProxyBroker](https://github.com/constverum/ProxyBroker) to release users from the burden of having to search for working proxies every time using the downloader.
+This is a python project supporting download from e-hentai and ex-hentai galleries and automatically searching for available proxies. We combine two already existed projects from GitHub: [fffonion/xeHentai](https://github.com/fffonion/xeHentai) and [stamparm/fetch-some-proxies](https://github.com/stamparm/fetch-some-proxies) to release users from the burden of having to search for working proxies every time using the downloader.
 
 ## Requirements
 
-- Python 3.5 or above
-- ProxyBroker
-- aiohttp
-- aiodns
-- maxminddb
-- requests with socks support
+- Python 2.x
 
 ## Installation
-
-### Install ProxyBroker
-
-To install ProxyBroker directly from GitHub:
-
-```bash
-$ pip install -U git+https://github.com/constverum/ProxyBroker.git
-```
-
-NOTE: Please do NOT install ProxyBroker directly from pip using `pip install ProxyBroker`. It does not work properly.
-
-### Install Requests
-
-```bash
-$ pip install -U requests[socks]
-```
-
-### Install aiohttp, aiodns, and maxminddb:
-
-```bash
-$ pip install aiohttp aiodns maxminddb
-```
 
 ### Install Proxy Hentai Downloader
 
