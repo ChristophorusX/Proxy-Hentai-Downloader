@@ -1,0 +1,47 @@
+#!/bin/bash
+
+if [[ $# -gt 1 ]]; then
+    CUSTOMIZE=YES
+fi
+
+while [[ $# -gt 1 ]]; do
+    WORD="$1"
+
+    case $WORD in
+        -u|--username)
+            USERNAME="$2"
+            shift
+        ;;
+        -k|--key)
+            KEY="$2"
+            shift
+        ;;
+        -g|--background)
+            BACKGROUND="$2"
+            shift
+        ;;
+        -i|--input)
+            INPUTPATH="$2"
+            shift
+        ;;
+        -o|--output)
+            OUTPUTPATH="$2"
+            shift
+        ;;
+        --default)
+            DEFAULT=YES
+        ;;
+        *)
+
+        ;;
+    esac
+    shift
+done
+
+echo "[INFO]Fetching avaliable proxies..."
+echo "[INFO]Proxy list has been output to file."
+if [[ ( -n $USERNAME ) && ( -n $KEY ) ]]; then
+    python ./xeH.py -u $USERNAME -k $KEY $(cat urls.txt)
+else
+    python ./xeH.py $(cat urls.txt)
+fi
