@@ -4,6 +4,9 @@ while [[ $# -gt 1 ]]; do
     WORD="$1"
 
     case $WORD in
+        -s|--skip)
+            SKIPSEARCH=YES
+        ;;
         -u|--username)
             USERNAME="$2"
             shift
@@ -11,9 +14,6 @@ while [[ $# -gt 1 ]]; do
         -k|--key)
             KEY="$2"
             shift
-        ;;
-        -s|--skip)
-            SKIPSEARCH=$WORD
         ;;
         --default)
             DEFAULT=YES
