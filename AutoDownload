@@ -5,6 +5,7 @@ while [[ $# -gt 1 ]]; do
 
     case $WORD in
         -s|--skip)
+            echo "YYYYYYYY"
             SKIPSEARCH=YES
         ;;
         -u|--username)
