@@ -17,7 +17,7 @@ while [[ $# -gt 1 ]]; do
             shift
         ;;
         -s|--skip)
-            SKIP=YES
+            SKIPSEARCH=YES
         ;;
         --default)
             DEFAULT=YES
@@ -29,7 +29,7 @@ while [[ $# -gt 1 ]]; do
     shift
 done
 
-if [[ -n $SKIP ]]; then
+if [[ -n $SKIPSEARCH ]]; then
     echo "[INFO]Skipping the proxy searching process."
 else
     echo "[INFO]Fetching avaliable proxies..."
