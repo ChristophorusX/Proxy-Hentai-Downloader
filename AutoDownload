@@ -22,7 +22,6 @@ while [[ $# -gt 1 ]]; do
         ;;
         -s|--skip)
             SKIP="YES"
-            shift
         ;;
         -i|--input)
             INPUTPATH="$2"
