@@ -47,6 +47,7 @@ else
     echo "[INFO]Fetching avaliable proxies..."
     python fetch.py
     echo "[INFO]Proxy list has been output to file."
+fi
 if [[ ( -n $USERNAME ) && ( -n $KEY ) ]]; then
     python ./xeH.py -u $USERNAME -k $KEY $(cat urls.txt)
 else

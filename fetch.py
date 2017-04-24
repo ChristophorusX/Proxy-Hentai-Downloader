@@ -120,7 +120,7 @@ def run():
 
 
     filepath = './fetched_proxies.txt'
-    handle = open(filepath, "w+b")
+    handle = open(filepath, "wb")
 
     sys.stdout.write("[i] storing results to '%s'...\n" % filepath)
 
