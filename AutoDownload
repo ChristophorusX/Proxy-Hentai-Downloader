@@ -16,20 +16,8 @@ while [[ $# -gt 1 ]]; do
             KEY="$2"
             shift
         ;;
-        -g|--background)
-            BACKGROUND="$2"
-            shift
-        ;;
         -s|--skip)
             SKIP=YES
-        ;;
-        -i|--input)
-            INPUTPATH="$2"
-            shift
-        ;;
-        -o|--output)
-            OUTPUTPATH="$2"
-            shift
         ;;
         --default)
             DEFAULT=YES
