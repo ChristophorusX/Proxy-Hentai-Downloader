@@ -1,11 +1,10 @@
 #!/bin/bash
 
-while [[ $# -gt 1 ]]; do
+while [[ $# -gt 0 ]]; do
     WORD="$1"
 
     case $WORD in
         -s|--skip)
-            echo "YYYYYYYY"
             SKIPSEARCH=YES
         ;;
         -u|--username)
