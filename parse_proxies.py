@@ -16,6 +16,8 @@ def parseProxies():
                     new_file.write(line)
 
     with open('proxies.txt', 'r') as f:
+        for line in f:
+            print(line)
         proxyList = [line[:-1] for line in f]
         return proxyList
 
