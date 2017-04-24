@@ -21,4 +21,4 @@ def parseProxies():
 
 
 if __name__ == '__main__':
-    parseProxies()
+    print(parseProxies())
