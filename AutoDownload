@@ -21,7 +21,7 @@ while [[ $# -gt 1 ]]; do
             shift
         ;;
         -s|--skip)
-            SKIP="YES"
+            SKIP=1
         ;;
         -i|--input)
             INPUTPATH="$2"
@@ -40,12 +40,13 @@ while [[ $# -gt 1 ]]; do
     esac
     shift
 done
+
 if [[ -n $SKIP ]]; then
+    echo "[INFO]Skipping the proxy searching process."
+else
     echo "[INFO]Fetching avaliable proxies..."
     python fetch.py
     echo "[INFO]Proxy list has been output to file."
-else
-    echo "[INFO]Skipping the proxy searching process."
 fi
 if [[ ( -n $USERNAME ) && ( -n $KEY ) ]]; then
     python ./xeH.py -u $USERNAME -k $KEY $(cat urls.txt)
