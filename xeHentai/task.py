@@ -20,15 +20,17 @@ else:
     from Queue import Queue, Empty
 
 class Task(object):
+    # Given a config and url, create an instance of Task
     def __init__(self, url, cfgdict):
         self.url = url
+        # Set gallery id and hash by parsing the url
         if url:
             _ = RE_INDEX.findall(url)
             if _:
                 self.gid, self.sethash = _[0]
         self.failcode = 0
         self.state = TASK_STATE_WAITING
-        self.guid = str(uuid.uuid4())[:8]
+        self.guid = str(uuid.uuid4())[:8] # Unique identifier for the task
         self.config = cfgdict
         self.meta = {}
         self.has_ori = False
@@ -43,6 +45,7 @@ class Task(object):
         self._f_lock = RLock()
 
     def cleanup(self):
+        """Clean up the queues and reload map for finished and failed tasks."""
         if self.state in (TASK_STATE_FINISHED, TASK_STATE_FAILED):
             self.img_q = None
             self.page_q = None
@@ -54,12 +57,15 @@ class Task(object):
             #     del self.meta['resampled']
 
     def set_fail(self, code):
+        """Clean up all cached meta data when set the task status to FAILED"""
         self.state = TASK_STATE_FAILED
         self.failcode = code
         # cleanup all we cached
         self.meta = {}
 
     def migrate_exhentai(self):
+        """Reset the url into an exhentai one if the current one is e-hentai and
+        put the task back to waiting list."""
         _ = re.findall("(?:https*://[g\.]*e\-hentai\.org)(.+)", self.url)
         if not _:
             return False
@@ -81,6 +87,7 @@ class Task(object):
     #     del self.meta['sample_hash']
 
     def base_url(self):
+        """Find the domain of site url, in which the task lives."""
         return re.findall(RESTR_SITE, self.url)[0]
 
     # def get_picpage_url(self, pichash):
@@ -189,14 +196,17 @@ class Task(object):
         self._f_lock.release()
 
     def get_fname(self, imgurl):
-        pageurl, fname = self.reload_map[imgurl]
-        _, fid = RE_GALLERY.findall(pageurl)[0]
+        """Given image url, get file name and the order number for the img."""
+        pageurl, fname = self.reload_map[imgurl] # structure of reload map: k:[v1,v2]
+        _, fid = RE_GALLERY.findall(pageurl)[0] # fid is the order number of pics
         return int(fid), fname
 
     def get_fpath(self):
+        """Get the path storing the task."""
         return os.path.join(self.config['dir'], util.legalpath(self.meta['title']))
 
     def get_fidpad(self, fid, ext = 'jpg'):
+        """Naming the downloaded files in order (given total # of pages)."""
         fid = int(fid)
         _ = "%%0%dd.%%s" % (len(str(self.meta['total'])))
         return _ % (fid, ext)
@@ -206,7 +216,7 @@ class Task(object):
         tmppath = os.path.join(fpath, RENAME_TMPDIR)
         cnt = 0
         error_list = []
-        # we need to track renamed fid's to decide 
+        # we need to track renamed fid's to decide
         # whether to rename into a temp filename or add (1)
         # only need it when rename_ori = True
         done_list = set()
@@ -215,7 +225,7 @@ class Task(object):
             # if we don't need to rename to original name and file type matches
             if not self.config['rename_ori'] and os.path.splitext(fname)[1].lower() == '.jpg':
                 continue
-            fname_ori = os.path.join(fpath, self.get_fidpad(fid)) # id          
+            fname_ori = os.path.join(fpath, self.get_fidpad(fid)) # id
             if self.config['rename_ori']:
                 if os.path.exists(os.path.join(tmppath, self.get_fidpad(fid))):
                     # if we previously put it into a temporary folder, we need to change fname_ori
@@ -268,6 +278,7 @@ class Task(object):
         return error_list
 
     def make_archive(self):
+        """Archive the downloaded task as a zip file."""
         dpath = self.get_fpath()
         arc = "%s.zip" % dpath
         if os.path.exists(arc):

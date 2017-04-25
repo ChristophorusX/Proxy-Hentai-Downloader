@@ -18,15 +18,22 @@ class PoolException(Exception):
 
 class Pool(object):
     def __init__(self, disable_policy = None):
-        self.proxies = {}
+        """A proxy pool contains a dict of proxies, a dict of errors,
+        and a dict of disabled proxies determined by default policy of
+        comparing the fail times with MAX_FAIL
+        """
+        self.proxies = {} #k: address, v: [proxy obj, # of suc, # of fail]
         self.errors = {}
         if not disable_policy:
             self.disable_policy = lambda x, y: y >= MAX_FAIL
         else:
             self.disable_policy = disable_policy
-        self.disabled = {} # key: expire
+        self.disabled = {} # k: address, v: expire
 
     def proxied_request(self, session):
+        """Select (randomly or sequentially) a workable proxy for the worker
+        and put the selected proxy in use into the dict of disabled
+        """
         for d in self.disabled:
             if 0 < self.disabled[d] < time.time():
                 try:
@@ -41,9 +48,13 @@ class Pool(object):
         return _[0](session), self.not_good(l[0])
 
     def has_available_proxies(self):
+        """Return if there's any avaliable proxies that are currently not in use"""
         return len([i for i in self.proxies.keys() if i not in self.disabled]) == 0
 
     def not_good(self, addr):
+        """Put the incoming address into disabled set by adding weight and
+        mark the time when it starts being used
+        """
         def n(weight = MAX_FAIL, expire = 0):
             self.proxies[addr][2] += weight
             if self.disable_policy(*self.proxies[addr][1:]):
@@ -51,6 +62,7 @@ class Pool(object):
                 self.disabled[addr] = expire + time.time()
         return n
 
+    # Decorator for proxy functions, checking functionality
     def trace_proxy(self, addr, weight = 1, check_func = None, exceptions = []):
         def _(func):
             def __(*args, **kwargs):
@@ -82,6 +94,7 @@ class Pool(object):
         return _
 
     def add_proxy(self, addr):
+        """Filter by kind and add the proxies into the pool"""
         if re.match("socks[45]a*://([^:^/]+)(\:\d{1,5})*/*$", addr):
             p = socks_proxy(addr, self.trace_proxy)
         elif re.match("https*://([^:^/]+)(\:\d{1,5})*/*$", addr):
@@ -90,8 +103,9 @@ class Pool(object):
             p = glype_proxy(addr, self.trace_proxy)
         else:
             raise ValueError("%s is not an acceptable proxy address" % addr)
-        self.proxies[addr] = [p, 0, 0]
+        self.proxies[addr] = [p, 0, 0] # Note: this is the structure of the v in dict
 
+# Warp a socks proxy
 def socks_proxy(addr, trace_proxy):
     proxy_info = {
         'http':addr,
@@ -105,6 +119,7 @@ def socks_proxy(addr, trace_proxy):
         return f
     return handle
 
+# Warp a http proxy
 def http_proxy(addr, trace_proxy):
     proxy_info = {
         'http':addr,
@@ -118,6 +133,7 @@ def http_proxy(addr, trace_proxy):
         return f
     return handle
 
+# Warp a glype proxy
 def glype_proxy(addr, trace_proxy):
     g_session = {"s":""}
     def handle(session, g_session = g_session):
