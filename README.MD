@@ -30,6 +30,8 @@ To download from exhentai galleries, put your username and password as flags, e.
 $ ./AutoDownload -u <your username> -k <your password>
 ```
 
+To skip the step of proxy searching, put `-s/--skip` flag.
+
 ### Set URLs
 
 All URLs waiting for download can be put into the file `urls.txt`. NOTE: URLs should be separated by spaces in order to be read by the program.
