@@ -1,6 +1,6 @@
 import parse_proxies
 
-dir = "/home/christophorus/Desktop/Downloaded Manga"
+dir = "/Volumes/Seagate/Manga"
 download_ori = False
 download_thread_cnt = 5
 scan_thread_cnt = 1

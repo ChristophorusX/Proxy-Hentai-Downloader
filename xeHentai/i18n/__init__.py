@@ -33,4 +33,5 @@ class _(object):
             getattr(lng, idx)
         return _ if PY3K else _.decode('utf-8')
 
+
 i18n = _()

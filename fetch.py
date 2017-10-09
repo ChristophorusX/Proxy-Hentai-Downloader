@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 
 import sys
-
-if sys.version_info.major > 2:
-    exit("[!] please run this program with Python v2.x")
-
 import json
 import optparse
 import os
@@ -13,23 +9,23 @@ import random
 import re
 import string
 import subprocess
-import tempfile
 import threading
 import time
 import urllib2
 
-VERSION = "2.63"
-BANNER = """
-+-++-++-++-++-++-++-++-++-++-++-++-++-++-++-++-++-++-+
-|f||e||t||c||h||-||s||o||m||e||-||p||r||o||x||i||e||s| <- v%s
-+-++-++-++-++-++-++-++-++-++-++-++-++-++-++-++-++-++-+""".strip("\r\n") % VERSION
+if sys.version_info.major > 2:
+    exit("[!] please run this program with Python v2.x")
 
-ANONIMITY_LEVELS = {"elite": "high", "anonymous": "medium", "transparent": "low"}
+
+VERSION = "2.017"
+BANNER = ">>>>>>>>>> Fetching Proxies (version %s) <<<<<<<<<<" % VERSION
+
+ANONIMITY_LEVELS = {"high": "elite", "medium": "anonymous", "low": "transparent"}
 FALLBACK_METHOD = False
 IFCONFIG_CANDIDATES = ("https://ifconfig.co/ip", "https://api.ipify.org/?format=text", "https://ifconfig.io/ip", "https://ifconfig.minidump.info/ip", "https://myexternalip.com/raw", "https://wtfismyip.com/text")
 IFCONFIG_URL = None
 MAX_HELP_OPTION_LENGTH = 18
-PROXY_LIST_URL = "https://hidester.com/proxydata/php/data.php?mykey=csv&gproxy=2"
+PROXY_LIST_URL = "https://raw.githubusercontent.com/stamparm/aux/master/fetch-some-list.txt"
 ROTATION_CHARS = ('/', '-', '\\', '|')
 TIMEOUT = 10
 THREADS = 10
@@ -63,23 +59,22 @@ def worker(queue, handle=None):
             sys.stdout.write("\r%s\r" % ROTATION_CHARS[counter[0] % len(ROTATION_CHARS)])
             sys.stdout.flush()
             start = time.time()
-            candidate = "%s://%s:%s" % (proxy["type"], proxy["IP"], proxy["PORT"])
-            if not all((proxy["IP"], proxy["PORT"])) or re.search(r"[^:/\w.]", candidate):
+            candidate = "%s://%s:%s" % (proxy["proto"], proxy["ip"], proxy["port"])
+            if not all((proxy["ip"], proxy["port"])) or re.search(r"[^:/\w.]", candidate):
                 continue
             if not FALLBACK_METHOD:
                 process = subprocess.Popen("curl -m %d -A \"%s\" --proxy %s %s" % (TIMEOUT, USER_AGENT, candidate, IFCONFIG_URL), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 result, _ = process.communicate()
-            elif proxy["type"] in ("http", "https"):
+            elif proxy["proto"] in ("http", "https"):
                 opener = urllib2.build_opener(urllib2.ProxyHandler({"http": candidate, "https": candidate}))
                 result = retrieve(IFCONFIG_URL, timeout=options.maxLatency or TIMEOUT, opener=opener)
-            if (result or "").strip() == proxy["IP"].encode("utf8"):
+            if (result or "").strip() == proxy["ip"].encode("utf8"):
                 latency = time.time() - start
                 if latency < (options.maxLatency or TIMEOUT):
-                    if handle:
-                        handle.write("%s%s" % (candidate, os.linesep))
-                        handle.flush()
-                    sys.stdout.write("\r%s%s # latency: %.2f sec; country: %s; anonymity: %s (%s)\n" % (candidate, " " * (32 - len(candidate)), latency, ' '.join(_.capitalize() for _ in (proxy["country"].lower() or '-').split(' ')), proxy["anonymity"].lower() or '-', ANONIMITY_LEVELS.get(proxy["anonymity"].lower(), '-')))
+                    sys.stdout.write("\r%s%s # latency: %.2f sec; country: %s; anonymity: %s (%s)\n" % (candidate, " " * (32 - len(candidate)), latency, ' '.join(_.capitalize() for _ in (proxy["country"].lower() or '-').split(' ')), proxy["type"], proxy["anonymity"]))
                     sys.stdout.flush()
+                    if handle:
+                        os.write(handle, "%s%s" % (candidate, os.linesep))
     except Queue.Empty:
         pass
 
@@ -87,6 +82,9 @@ def run():
     global FALLBACK_METHOD
     global IFCONFIG_URL
 
+    options.outputFile = 'fetched_proxies.txt'
+
+    sys.stdout.write(">>>>>>>>>> FETCH SOME PROXIES <<<<<<<<<<\n")
     sys.stdout.write("[i] initial testing...\n")
 
     for candidate in IFCONFIG_CANDIDATES:
@@ -101,7 +99,7 @@ def run():
 
     sys.stdout.write("[i] retrieving list of proxies...\n")
     try:
-        proxies = json.loads(retrieve(PROXY_LIST_URL, headers={"User-agent": USER_AGENT, "Referer": "https://hidester.com/proxylist/"}))
+        proxies = json.loads(retrieve(PROXY_LIST_URL, headers={"User-agent": USER_AGENT}))
     except:
         exit("[!] something went wrong during the proxy list retrieval/parsing. Please check your network settings and try again")
     random.shuffle(proxies)
@@ -113,16 +111,17 @@ def run():
                 continue
             if options.anonymity and not re.search(options.anonymity, "%s (%s)" % (proxy["anonymity"], ANONIMITY_LEVELS.get(proxy["anonymity"].lower(), "")), re.I):
                 continue
-            if options.type and not re.search(options.type, proxy["type"], re.I):
+            if options.type and not re.search(options.type, proxy["proto"], re.I):
                 continue
             _.append(proxy)
         proxies = _
 
 
-    filepath = './fetched_proxies.txt'
-    handle = open(filepath, "wb")
-
-    sys.stdout.write("[i] storing results to '%s'...\n" % filepath)
+    if options.outputFile:
+        handle = os.open(options.outputFile, os.O_APPEND | os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
+        sys.stdout.write("[i] storing results to '%s'...\n" % options.outputFile)
+    else:
+        handle = None
 
     queue = Queue.Queue()
     for proxy in proxies:
@@ -135,8 +134,8 @@ def run():
 
         try:
             thread.start()
-        except ThreadError as ex:
-            sys.stderr.write("[x] error occurred while starting new thread ('%s')" % ex.message)
+        except:
+            sys.stderr.write("[x] error occurred while starting new thread")
             break
 
         threads.append(thread)
@@ -156,8 +155,8 @@ def run():
     finally:
         sys.stdout.flush()
         sys.stderr.flush()
-        handle.flush()
-        handle.close()
+        if handle:
+            os.close(handle)
         os._exit(0)
 
 def main():
@@ -168,6 +167,7 @@ def main():
     parser.add_option("--anonymity", dest="anonymity", help="Regex for filtering anonymity (e.g. \"anonymous|elite\")")
     parser.add_option("--country", dest="country", help="Regex for filtering country (e.g. \"china|brazil\")")
     parser.add_option("--max-latency", dest="maxLatency", type=float, help="Maximum (tolerable) latency in seconds (default %d)" % TIMEOUT)
+    parser.add_option("--output", dest="outputFile", help="Store resulting proxies to output file")
     parser.add_option("--threads", dest="threads", type=int, help="Number of scanning threads (default %d)" % THREADS)
     parser.add_option("--type", dest="type", help="Regex for filtering proxy type (e.g. \"http\")")
 

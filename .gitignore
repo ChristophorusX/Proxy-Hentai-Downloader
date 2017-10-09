@@ -12,3 +12,5 @@ verinfo.txt
 make.bat
 README.html
 CHANGELOG.html
+
+target/
