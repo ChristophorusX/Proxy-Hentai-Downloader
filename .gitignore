@@ -14,3 +14,4 @@ README.html
 CHANGELOG.html
 
 target/
+.ensime_cache/
