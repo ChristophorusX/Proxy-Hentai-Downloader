@@ -2,7 +2,7 @@
 
 ## General
 
-This is a python project supporting download from e-hentai and ex-hentai galleries and automatically searching for available proxies. We combine two already existed projects from GitHub: [fffonion/xeHentai](https://github.com/fffonion/xeHentai) and [stamparm/fetch-some-proxies](https://github.com/stamparm/fetch-some-proxies) to release users from the burden of having to search for working proxies every time using the downloader.
+This is a python project supporting download from e-hentai and ex-hentai galleries (with the help of proxies) while automatically searching for available proxies. We combine two existing projects from GitHub: [fffonion/xeHentai](https://github.com/fffonion/xeHentai) and [stamparm/fetch-some-proxies](https://github.com/stamparm/fetch-some-proxies) to release users from the burden of having to search for working proxies every time using the downloader.
 
 ## Requirements
 
@@ -63,6 +63,10 @@ In order to download image from ex-hentai gallery, one needs to provide user nam
 ### Filtering Proxies
 
 One can choose whether or not to run the proxy searching program before each download. The skipping of the proxy search can be done by providing `-s/--skip` flag.
+
+### Getting gallery items from favorites
+
+The helping script `extractor.py` can extract target address from the source (html) page of your gallery.
 
 ## Legal Issues
 
