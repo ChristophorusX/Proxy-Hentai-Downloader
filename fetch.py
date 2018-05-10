@@ -4,17 +4,15 @@ import sys
 import json
 import optparse
 import os
-import Queue
+import queue as py3queue
 import random
 import re
 import string
 import subprocess
 import threading
 import time
-import urllib2
-
-if sys.version_info.major > 2:
-    exit("[!] please run this program with Python v2.x")
+import base64
+import urllib.request, urllib.error, urllib.parse
 
 
 VERSION = "2.017"
@@ -29,10 +27,7 @@ PROXY_LIST_URL = "https://raw.githubusercontent.com/stamparm/aux/master/fetch-so
 ROTATION_CHARS = ('/', '-', '\\', '|')
 TIMEOUT = 10
 THREADS = 10
-USER_AGENT = "curl/7.{curl_minor}.{curl_revision} (x86_64-pc-linux-gnu) libcurl/7.{curl_minor}.{curl_revision} OpenSSL/0.9.8{openssl_revision} zlib/1.2.{zlib_revision}".format(curl_minor=random.randint(8, 22), curl_revision=random.randint(1, 9), openssl_revision=random.choice(string.lowercase), zlib_revision=random.randint(2, 6))
-
-if not subprocess.mswindows:
-    BANNER = re.sub(r"\|(\w)\|", lambda _: "|\033[01;41m%s\033[00;49m|" % _.group(1), BANNER)
+USER_AGENT = "curl/7.{curl_minor}.{curl_revision} (x86_64-pc-linux-gnu) libcurl/7.{curl_minor}.{curl_revision} OpenSSL/0.9.8{openssl_revision} zlib/1.2.{zlib_revision}".format(curl_minor=random.randint(8, 22), curl_revision=random.randint(1, 9), openssl_revision=random.choice(string.ascii_lowercase), zlib_revision=random.randint(2, 6))
 
 options = None
 counter = [0]
@@ -40,8 +35,8 @@ threads = []
 
 def retrieve(url, data=None, headers={"User-agent": USER_AGENT}, timeout=TIMEOUT, opener=None):
     try:
-        req = urllib2.Request("".join(url[i].replace(' ', "%20") if i > url.find('?') else url[i] for i in xrange(len(url))), data, headers)
-        retval = (urllib2.urlopen if not opener else opener.open)(req, timeout=timeout).read()
+        req = urllib.request.Request("".join(url[i].replace(' ', "%20") if i > url.find('?') else url[i] for i in range(len(url))), data, headers)
+        retval = (urllib.request.urlopen if not opener else opener.open)(req, timeout=timeout).read()
     except Exception as ex:
         try:
             retval = ex.read() if hasattr(ex, "read") else getattr(ex, "msg", str())
@@ -66,7 +61,7 @@ def worker(queue, handle=None):
                 process = subprocess.Popen("curl -m %d -A \"%s\" --proxy %s %s" % (TIMEOUT, USER_AGENT, candidate, IFCONFIG_URL), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 result, _ = process.communicate()
             elif proxy["proto"] in ("http", "https"):
-                opener = urllib2.build_opener(urllib2.ProxyHandler({"http": candidate, "https": candidate}))
+                opener = urllib.request.build_opener(urllib.request.ProxyHandler({"http": candidate, "https": candidate}))
                 result = retrieve(IFCONFIG_URL, timeout=options.maxLatency or TIMEOUT, opener=opener)
             if (result or "").strip() == proxy["ip"].encode("utf8"):
                 latency = time.time() - start
@@ -74,8 +69,11 @@ def worker(queue, handle=None):
                     sys.stdout.write("\r%s%s # latency: %.2f sec; country: %s; anonymity: %s (%s)\n" % (candidate, " " * (32 - len(candidate)), latency, ' '.join(_.capitalize() for _ in (proxy["country"].lower() or '-').split(' ')), proxy["type"], proxy["anonymity"]))
                     sys.stdout.flush()
                     if handle:
-                        os.write(handle, "%s%s" % (candidate, os.linesep))
-    except Queue.Empty:
+                        candidate = candidate + os.linesep
+                        candidate = candidate.encode("utf-8")
+                        # candidate = base64.b64encode(candidate)
+                        os.write(handle, candidate)
+    except py3queue.Empty:
         pass
 
 def run():
@@ -88,13 +86,14 @@ def run():
     sys.stdout.write("[i] initial testing...\n")
 
     for candidate in IFCONFIG_CANDIDATES:
-        result = retrieve(candidate)
+        result = retrieve(candidate).decode('utf-8')
         if re.search(r"\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z", (result or "").strip()):
             IFCONFIG_URL = candidate
             break
 
     process = subprocess.Popen("curl -m %d -A \"%s\" %s" % (TIMEOUT, USER_AGENT, IFCONFIG_URL), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, _ = process.communicate()
+    stdout = stdout.decode('utf-8')
     FALLBACK_METHOD = re.search(r"\d+\.\d+\.\d+\.\d+", stdout or "") is None
 
     sys.stdout.write("[i] retrieving list of proxies...\n")
@@ -123,12 +122,12 @@ def run():
     else:
         handle = None
 
-    queue = Queue.Queue()
+    queue = py3queue.Queue()
     for proxy in proxies:
         queue.put(proxy)
 
     sys.stdout.write("[i] testing %d proxies (%d threads)...\n\n" % (len(proxies), options.threads or THREADS))
-    for _ in xrange(options.threads or THREADS):
+    for _ in range(options.threads or THREADS):
         thread = threading.Thread(target=worker, args=[queue, handle])
         thread.daemon = True
 
@@ -179,7 +178,7 @@ def main():
         return retVal
 
     parser.formatter._format_option_strings = parser.formatter.format_option_strings
-    parser.formatter.format_option_strings = type(parser.formatter.format_option_strings)(_, parser, type(parser))
+    parser.formatter.format_option_strings = type(parser.formatter.format_option_strings)(_, parser)
 
     for _ in ("-h", "--version"):
         option = parser.get_option(_)
@@ -188,7 +187,7 @@ def main():
     try:
         options, _ = parser.parse_args()
     except SystemExit:
-        print
+        print()
         raise
 
     run()

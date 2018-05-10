@@ -6,7 +6,7 @@ This is a python project supporting download from e-hentai and ex-hentai galleri
 
 ## Requirements
 
-- Python 2.x
+- Python 3.x
 
 ## Installation
 
