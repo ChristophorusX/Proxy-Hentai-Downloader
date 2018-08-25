@@ -10,42 +10,43 @@ object Extractor {
     val urlFile = new File(
       "/Users/christophorus/Desktop/Proxy-Hentai-Downloader/urls.txt")
     val urlPrintWriter = new PrintWriter(urlFile)
-    val documentName =
-      s"/Users/christophorus/Downloads/php/view-source_https___exhentai.org_favorites.php.html"
+    val displayName =
+      s"view-source_https___exhentai.org_favorites.php.html"
+    val documentName = "/Users/christophorus/Downloads/php/" + displayName
     val resultUrlStringList = new ListBuffer[String]()
     if (Files.exists(Paths.get(documentName))) {
-      println(s"Now parsing document $documentName")
+      println(s"Now parsing document $displayName")
       resultUrlStringList ++= parse(documentName)
-      println(s"Document $documentName has been parsed!")
+      println(s"[SUCCESS] Document $displayName has been parsed!")
     } else {
-      println(s"$documentName does not exit.")
+      println(s"[WARNING] $displayName does not exist.")
     }
 
     for (i <- 1 to 50) {
-      val documentName =
-        s"/Users/christophorus/Downloads/php/view-source_https___exhentai.org_favorites.php_page=$i.html"
+      val displayName =
+        s"view-source_https___exhentai.org_favorites.php_page=$i.html"
+      val documentName = "/Users/christophorus/Downloads/php/" + displayName
       if (Files.exists(Paths.get(documentName))) {
-        println(s"Now parsing document $documentName")
+        println(s"Now parsing document $displayName")
         resultUrlStringList ++= parse(documentName)
-        println(s"Document $documentName has been parsed!")
+        println(s"[SUCCESS] Document $displayName has been parsed!")
       } else {
-        println(s"$documentName does not exit.")
+        println(s"[WARNING] $displayName does not exist.")
       }
     }
 
     urlPrintWriter.write(resultUrlStringList.mkString(" "))
-    urlPrintWriter.close()
+    urlPrintWriter.close
   }
 
   val parse = (documentName: String) => {
-    val pattern = new Regex("https://exhentai.org/g/[0-9]+/[0-9a-z]{10}/")
+    val pattern = raw"https://exhentai.org/g/[0-9]+/[0-9a-z]{10}/".r
     val bufferSource = Source.fromFile(documentName)
     val fileString = bufferSource.getLines().mkString
     bufferSource.close
-    val urlList = pattern.findAllIn(fileString).toList
-    val cleanList = for {
-      (url, count) <- urlList.zipWithIndex if count % 2 == 0
-    } yield url
-    cleanList
+    pattern.findAllMatchIn(fileString).map(_.toString)
+    // for {
+    //   (url, count) <- urlList.zipWithIndex if count % 2 == 0
+    // } yield url
   }
 }
