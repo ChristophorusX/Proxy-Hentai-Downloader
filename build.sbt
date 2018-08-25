@@ -1,10 +1,3 @@
-name :="Url Parser"
-
-version :="0.2017"
-
-scalaVersion :="2.12.3"
-
-libraryDependencies ++= Seq(
-                        "org.apache.httpcomponents" % "httpclient" % "4.5.3",
-                        "org.jsoup" % "jsoup" % "1.8.3"
-                        )
+scalaVersion := "0.9.0-RC1"
+scalacOptions ++= { if (isDotty.value) Seq("-language:Scala2") else Nil }
+// libraryDependencies += ("a" %% "b" % "c").withDottyCompat(scalaVersion.value)
